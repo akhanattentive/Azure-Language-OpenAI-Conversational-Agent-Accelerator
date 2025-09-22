@@ -15,7 +15,10 @@ blob_container_name=$2
 cp ../../data/${product_info_file} .
 
 # Unzip data:
-mkdir product_info && mv ${product_info_file} product_info/
+if [ ! -d "product_info" ]; then
+    mkdir product_info
+fi
+mv ${product_info_file} product_info/
 cd product_info && tar -xvzf ${product_info_file} && cd ..
 
 # Upload data to storage account blob container:
@@ -26,13 +29,17 @@ max_retries=3
 retry_count=0
 
 while [ $retry_count -lt $max_retries ]; do
+    # Try to ensure we're authenticated with managed identity
+    az account show > /dev/null 2>&1
+    
     if az storage blob upload-batch \
         --auth-mode login \
         --destination ${blob_container_name} \
         --account-name ${storage_account_name} \
         --source "product_info" \
         --pattern "*.md" \
-        --overwrite; then
+        --overwrite \
+        --only-show-errors; then
         echo "Successfully uploaded files to blob container"
         break
     else

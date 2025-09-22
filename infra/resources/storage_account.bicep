@@ -21,7 +21,7 @@ resource storage_account 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     publicNetworkAccess: 'Enabled'
     networkAcls: {
       defaultAction: 'Allow'
-      bypass: 'AzureServices'
+      bypass: 'AzureServices, Logging, Metrics'
     }
   }
   sku: {
